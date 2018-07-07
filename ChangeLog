@@ -1,6 +1,8 @@
-Qt 5.11 introduces many new features and improvements as well as bugfixes
-over the 5.10.x series. For more details, refer to the online documentation
-included in this distribution. The documentation is also available online:
+Qt 5.11.1 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.11.0.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
 
 http://doc.qt.io/qt-5/index.html
 
@@ -16,30 +18,14 @@ Each of these identifiers can be entered in the bug tracker to obtain more
 information about a particular change.
 
 ****************************************************************************
-*                            Qt 5.11.0 Changes                             *
+*                              Qt 5.11.1 Changes                           *
 ****************************************************************************
 
 QtBluetooth
 -----------
 
- - Added default assignment operator for QBluetoothUuid.
-
- - Added default qRegisterMetaType() calls for QLowEnergyCharacteristic
-   and QLowEnergyDescriptor.
-
- - Fixed various clazy warnings throughout the library.
-
- - [QTBUG-65831] Added QBluetoothSocket::connectToService() overload to
-   disambiguate corner cases.
-
- - Fixed minor documentation issues.
-
- - [QTBUG-67651] Fixed QLowEnergyController::remoteName() and remoteAddress().
-
-QtNfc
------
-
- - Improved and reviewed most examples and their documentation
+ - [QTBUG-67672] Addressed missing emission of readChannelFinished() in
+   QBluetoothSocket as required by QIODevice.
 
 ****************************************************************************
 *                      Platform Specific Changes                           *
@@ -48,32 +34,21 @@ QtNfc
 Android
 -------
 
- - [QTBUG-66490] Fixed case of ACCESS_FINE_LOCATION not being recognized as
-   possible permission besides ACCESS_COARSE_LOCATION for device discovery.
-
- - Fixed repeated connect()/disconnect() behavior for QLowEnergyController
-   in peripheral mode.
+ - [QTBUG-65826] Fixed crash in QLowEnergyController during service discovery.
 
 iOS/macOS
 ---------
 
- - Dropped 10.9 SDK support
+ - [QTBUG-68422] Fixed never-ending QLowEnergyController service discovery due
+   to remote peripheral devices not responding properly to requests. A timeout
+   was added to catch such cases.
 
 Linux/BlueZ
 -----------
 
- - [QTBUG-46819] Ported QLowEnergyController central mode to BlueZ's DBus
-   API. The new implementation is used when BlueZ 5.42+ is detected. Earlier
-   versions will continue to use the the previous custom GATT stack. The benefit
-   of this change is improved co-existence with BlueZ which avoids interference
-   between BlueZ and Qt and permits multiple Qt and platform apps being able to
-   share BTLE connections. The custom GATT peripheral role implementation is still used on
-   all BlueZ platforms.
+ - [QTBUG-64735] Fixed blocking QBluetoothLocalDevice::requestPairing() call
+   which should not block.
 
- - [QTBUG-66056] Fixed case of QLowEnergyController not resetting the MTU in between connect()/
-   disconnect() cycles.
+ - Fixed missing service invalidation when calling
+   QLowEnergyController::disconnectService().
 
-WinRT
------
-
- - Fixed issues with not properly closing QBluetoothSocket.
