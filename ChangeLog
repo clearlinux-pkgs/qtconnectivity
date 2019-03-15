@@ -1,10 +1,10 @@
-Qt 5.12.1 is a bug-fix release. It maintains both forward and backward
-compatibility (source and binary) with Qt 5.12.0.
+Qt 5.12.2 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.12.0 through 5.12.1.
 
 For more details, refer to the online documentation included in this
 distribution. The documentation is also available online:
 
-http://doc.qt.io/qt-5/index.html
+https://doc.qt.io/qt-5/index.html
 
 The Qt version 5.12 series is binary compatible with the 5.11.x series.
 Applications compiled for 5.11 will continue to run with 5.12.
@@ -17,40 +17,45 @@ https://bugreports.qt.io/
 Each of these identifiers can be entered in the bug tracker to obtain more
 information about a particular change.
 
-****************************************************************************
-*                              Qt 5.12.1 Changes                           *
-****************************************************************************
+***************************************************************************
+*                              Qt 5.12.2 Changes                          *
+***************************************************************************
 
 QtBluetooth
 -----------
 
- - Added various documentation clarifications.
- - Fixed issue when compiling qbluetoothsocket.h header via gcc 4.8
+ - Added documentation improvements to QBluetoothServiceDiscoveryAgent.
 
-****************************************************************************
-*                      Platform Specific Changes                           *
-****************************************************************************
+QtNfc
+-----
+
+ - Fixed exceptions on Android WearOS devices because those devices not
+   supporting NFC.
+
+***************************************************************************
+*                      Platform Specific Changes                          *
+***************************************************************************
 
 Android
 -------
 
- - [QTBUG-46008] Fixed wrong order emitting
-   QBluetoothDeviceDiscoveryAgent::deviceUpdated() & deviceDiscovered() signals.
+ - [QTBUG-72681] Fixed wrong reversing of service uuids when calling
+   QBLuetoothSocket::connectToService().
+
+ - Fixed a crash when destroying QBluetoothDeviceDisocveryAgent during an
+   ongoing scan.
+
+ - [QTBUG-73571] Fixed tst_QBluetoothServiceDiscoveryAgent::tst_invalidBtAddress()
+   which was failing on Android.
 
 iOS/macOS
 ---------
 
- - [QTBUG-72487] Addressed inability to run several LE service detail discoveries
-   concurrently.
+ - [QTBUG-73140] Fixed a crash in QBluetoothDeviceDiscoveryAgent when the user
+   turns off Bluetooth while a scan is running.
 
 Linux/BlueZ
 -----------
 
- - [QTBUG-72742] Added missing dbus registration for an unexpected way of
-   using QBluetoothSocket.
-
-WinRT/UWP
----------
-
- - [QTBUG-67090] Fixed WinRT port not working with heartrate-game example.
- - Added several fixes to unit tests enabling them to be run by Qt CI on WinRT.
+ - [QTBUG-72800] Addressed bug where a discovered custom uuid was not returned
+   via BluetoothServiceInfo::serviceUuid() but as serviceClassUuids().
