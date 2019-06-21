@@ -4,7 +4,7 @@ libQt5Bluetooth.so.5:Qt_5.1
 libQt5Bluetooth.so.5:Qt_5.10
 libQt5Bluetooth.so.5:Qt_5.11
 libQt5Bluetooth.so.5:Qt_5.12
-libQt5Bluetooth.so.5:Qt_5.12.3_PRIVATE_API
+libQt5Bluetooth.so.5:Qt_5.12.4_PRIVATE_API
 libQt5Bluetooth.so.5:Qt_5.2
 libQt5Bluetooth.so.5:Qt_5.3
 libQt5Bluetooth.so.5:Qt_5.4
@@ -561,7 +561,7 @@ libQt5Nfc.so.5:Qt_5.1
 libQt5Nfc.so.5:Qt_5.10
 libQt5Nfc.so.5:Qt_5.11
 libQt5Nfc.so.5:Qt_5.12
-libQt5Nfc.so.5:Qt_5.12.3_PRIVATE_API
+libQt5Nfc.so.5:Qt_5.12.4_PRIVATE_API
 libQt5Nfc.so.5:Qt_5.2
 libQt5Nfc.so.5:Qt_5.3
 libQt5Nfc.so.5:Qt_5.4
