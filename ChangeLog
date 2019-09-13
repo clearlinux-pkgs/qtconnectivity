@@ -1,13 +1,13 @@
-Qt 5.12.4 is a bug-fix release. It maintains both forward and backward
-compatibility (source and binary) with Qt 5.12.0 through 5.12.3.
+Qt 5.13.1 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.13.0.
 
 For more details, refer to the online documentation included in this
 distribution. The documentation is also available online:
 
 https://doc.qt.io/qt-5/index.html
 
-The Qt version 5.12 series is binary compatible with the 5.11.x series.
-Applications compiled for 5.11 will continue to run with 5.12.
+The Qt version 5.13 series is binary compatible with the 5.12.x series.
+Applications compiled for 5.12 will continue to run with 5.13.
 
 Some of the changes listed in this file include issue tracking numbers
 corresponding to tasks in the Qt Bug Tracker:
@@ -18,22 +18,19 @@ Each of these identifiers can be entered in the bug tracker to obtain more
 information about a particular change.
 
 ****************************************************************************
-*                              Qt 5.12.3 Changes                           *
+*                         Qt 5.13.1 Changes                                *
 ****************************************************************************
 
 QtBluetooth
 -----------
 
- - Fixed a memory leak in QBluetoothServiceDiscoveryAgent on Android.
+ - [QTBUG-62520] Improved stability of QBluetoothSocket::connectToService()
+   on WinRT.
 
- - [QTBUG-75035] Improved likelihood of
-   QBluetoothSocket::connectToService(QBluetoothServiceInfo,..) succeeding when
-   QBluetoothServiceInfo::socketProtocol() returns a non-RFCOMM type. Since Android
-   does not support anything but RFCOMM it always assumes RFCOMM.
+ - [QTBUG-62294] Added implementation for QBluetoothLocalSocket on WinRT. Note
+   that the platform only supports pairingStatus() related features.
 
- - Fixed reading of descriptor values on WinRT.
+ - Improved stability of QLowEnergyController on WinRT.
 
- - [QTBUG-75043] Fixed behavior when a peripheral changes its service list at runtime
+ - [QTBUG-75907] Reduced number of asserts in QLowEnergyController on WinRT.
 
- - [QTBUG-75278] Fixed socket leak when running QLowEnergyController Peripheral mode
-   on Linux.
