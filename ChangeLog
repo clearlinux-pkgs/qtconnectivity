@@ -1,5 +1,5 @@
-Qt 5.13.1 is a bug-fix release. It maintains both forward and backward
-compatibility (source and binary) with Qt 5.13.0.
+Qt 5.13.2 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.13.0 through 5.13.1.
 
 For more details, refer to the online documentation included in this
 distribution. The documentation is also available online:
@@ -18,19 +18,18 @@ Each of these identifiers can be entered in the bug tracker to obtain more
 information about a particular change.
 
 ****************************************************************************
-*                         Qt 5.13.1 Changes                                *
+*                         Qt 5.13.2 Changes                                *
 ****************************************************************************
 
 QtBluetooth
 -----------
 
- - [QTBUG-62520] Improved stability of QBluetoothSocket::connectToService()
-   on WinRT.
+ - [QTQAINFRA-2139] Fixed QMutex related compile error when using clang on
+   Windows.
 
- - [QTBUG-62294] Added implementation for QBluetoothLocalSocket on WinRT. Note
-   that the platform only supports pairingStatus() related features.
+ - [QTBUG-78201] Fixed a case where an existing descriptor was not discovered
+   during the service discovery due to not being readable. This issue happened
+   on Android.
 
- - Improved stability of QLowEnergyController on WinRT.
-
- - [QTBUG-75907] Reduced number of asserts in QLowEnergyController on WinRT.
+ - Fixed a few minor documentation issues.
 
