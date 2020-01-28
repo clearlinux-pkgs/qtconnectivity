@@ -6,7 +6,7 @@ libQt5Bluetooth.so.5:Qt_5.11
 libQt5Bluetooth.so.5:Qt_5.12
 libQt5Bluetooth.so.5:Qt_5.13
 libQt5Bluetooth.so.5:Qt_5.14
-libQt5Bluetooth.so.5:Qt_5.14.0_PRIVATE_API
+libQt5Bluetooth.so.5:Qt_5.14.1_PRIVATE_API
 libQt5Bluetooth.so.5:Qt_5.2
 libQt5Bluetooth.so.5:Qt_5.3
 libQt5Bluetooth.so.5:Qt_5.4
@@ -304,7 +304,7 @@ libQt5Bluetooth.so.5:_ZN28QBluetoothTransferReplyBluez11qt_metacastEPKc
 libQt5Bluetooth.so.5:_ZN28QBluetoothTransferReplyBluez12sendReturnedEP23QDBusPendingCallWatcher
 libQt5Bluetooth.so.5:_ZN28QBluetoothTransferReplyBluez14cleanupSessionEv
 libQt5Bluetooth.so.5:_ZN28QBluetoothTransferReplyBluez14copyToTempFileEP9QIODeviceS1_
-libQt5Bluetooth.so.5:_ZN28QBluetoothTransferReplyBluez14sessionChangedERK7QStringRK4QMapIS0_8QVariantERK11QStringList
+libQt5Bluetooth.so.5:_ZN28QBluetoothTransferReplyBluez14sessionChangedERK7QStringRK4QMapIS0_8QVariantERK11QStringListRK12QDBusMessage
 libQt5Bluetooth.so.5:_ZN28QBluetoothTransferReplyBluez14sessionCreatedEP23QDBusPendingCallWatcher
 libQt5Bluetooth.so.5:_ZN28QBluetoothTransferReplyBluez14sessionStartedEP23QDBusPendingCallWatcher
 libQt5Bluetooth.so.5:_ZN28QBluetoothTransferReplyBluez5ErrorERK15QDBusObjectPathRK7QString
@@ -597,7 +597,7 @@ libQt5Nfc.so.5:Qt_5.11
 libQt5Nfc.so.5:Qt_5.12
 libQt5Nfc.so.5:Qt_5.13
 libQt5Nfc.so.5:Qt_5.14
-libQt5Nfc.so.5:Qt_5.14.0_PRIVATE_API
+libQt5Nfc.so.5:Qt_5.14.1_PRIVATE_API
 libQt5Nfc.so.5:Qt_5.2
 libQt5Nfc.so.5:Qt_5.3
 libQt5Nfc.so.5:Qt_5.4
