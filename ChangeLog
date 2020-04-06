@@ -1,5 +1,5 @@
-Qt 5.14.1 is a bug-fix release. It maintains both forward and backward
-compatibility (source and binary) with Qt 5.14.0.
+Qt 5.14.2 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.14.0 through 5.14.1.
 
 For more details, refer to the online documentation included in this
 distribution. The documentation is also available online:
@@ -21,5 +21,29 @@ information about a particular change.
 *                               QtBluetooth                                *
 ****************************************************************************
 
- - BlueZ-DBus:
-   * Invalidate btle service when it has disappeared
+ - Windows:
+   * [QTBUG-80770] Fixed service state (DiscoveryRequired) when service
+     detail discovery fails.
+   * [QTBUG-81827] Avoid possible lock when calling
+     QBluetoothServer::hasPendingConnections.
+ - Android:
+   * Fixed the missing QLowEnergyService::error() signal emission if the
+     error was detected on the Java side. This probably cut 50% of all
+     errors out.
+   * Fixed runtime exception that happened when calling "stopLeScan" when
+     device's Bluetooth adapter is turned off.
+   * [QTBUG-81875] Fixed QBluetoothDeviceDiscoveryAgent with Android API 29.
+   * Fixed race condition where incoming and outgoing Low Energy requests
+     could overwrite each others payload.
+ - Linux:
+   * [QTBUG-81696] Added support for characteristic Write Without Response
+     requests when using BlueZ 5.50 or later.
+
+****************************************************************************
+*                               QtNFC                                      *
+****************************************************************************
+
+ - Android:
+   * Fixed case when QNearFieldTarget::waitForRequestCompleted() did not stop
+     early (caused overly long timeout case) despite QNearFieldTarget::sendCommand()
+     having failed already.
