@@ -1,0 +1,214 @@
+Andreas Buhr (4):
+      Correct error handling in QLowEnergyControllerPrivateBluezDBUS
+      Fix error handling in BlueZ connectToServiceHelper
+      Add server role to BlueZ service registration
+      Always call setOpenMode before setSocketState
+
+Jani Heikkinen (1):
+      Bump version
+
+diff --git a/dist/changes-5.15.2 b/dist/changes-5.15.2
+deleted file mode 100644
+index 904e0eab..00000000
+--- a/dist/changes-5.15.2
++++ /dev/null
+@@ -1,24 +0,0 @@
+-Qt 5.15.2 is a bug-fix release. It maintains both forward and backward
+-compatibility (source and binary) with Qt 5.15.1.
+-
+-For more details, refer to the online documentation included in this
+-distribution. The documentation is also available online:
+-
+-  https://doc.qt.io/qt-5.15/index.html
+-
+-The Qt version 5.15 series is binary compatible with the 5.14.x series.
+-Applications compiled for 5.14 will continue to run with 5.15.
+-
+-Some of the changes listed in this file include issue tracking numbers
+-corresponding to tasks in the Qt Bug Tracker:
+-
+-  https://bugreports.qt.io/
+-
+-Each of these identifiers can be entered in the bug tracker to obtain more
+-information about a particular change.
+-
+-****************************************************************************
+-*                              Qt 5.15.2                                   *
+-****************************************************************************
+-
+-This release only contains minor changes.
+diff --git a/src/bluetooth/qbluetoothserviceinfo_bluez.cpp b/src/bluetooth/qbluetoothserviceinfo_bluez.cpp
+index d91367c4..418d0a1f 100644
+--- a/src/bluetooth/qbluetoothserviceinfo_bluez.cpp
++++ b/src/bluetooth/qbluetoothserviceinfo_bluez.cpp
+@@ -297,6 +297,7 @@ bool QBluetoothServiceInfoPrivate::registerService(const QBluetoothAddress &loca
+ 
+         QVariantMap mapping;
+         mapping.insert(QStringLiteral("ServiceRecord"), xmlServiceRecord);
++        mapping.insert(QStringLiteral("Role"), QStringLiteral("server"));
+ 
+         // Strategy to pick service uuid
+         // 1.) use serviceUuid()
+diff --git a/src/bluetooth/qbluetoothsocket_bluez.cpp b/src/bluetooth/qbluetoothsocket_bluez.cpp
+index e7d06f2e..2c22fde6 100644
+--- a/src/bluetooth/qbluetoothsocket_bluez.cpp
++++ b/src/bluetooth/qbluetoothsocket_bluez.cpp
+@@ -689,8 +689,8 @@ bool QBluetoothSocketPrivateBluez::setSocketDescriptor(int socketDescriptor, QBl
+     connectWriteNotifier = new QSocketNotifier(socket, QSocketNotifier::Write, q);
+     QObject::connect(connectWriteNotifier, SIGNAL(activated(QSocketDescriptor)), this, SLOT(_q_writeNotify()));
+ 
+-    q->setSocketState(socketState);
+     q->setOpenMode(openMode);
++    q->setSocketState(socketState);
+ 
+     return true;
+ }
+diff --git a/src/bluetooth/qbluetoothsocket_bluezdbus.cpp b/src/bluetooth/qbluetoothsocket_bluezdbus.cpp
+index d3fc13e4..084aa958 100644
+--- a/src/bluetooth/qbluetoothsocket_bluezdbus.cpp
++++ b/src/bluetooth/qbluetoothsocket_bluezdbus.cpp
+@@ -238,18 +238,29 @@ void QBluetoothSocketPrivateBluezDBus::connectToServiceHelper(
+     OrgBluezDevice1Interface device(QStringLiteral("org.bluez"), remoteDevicePath,
+                                     QDBusConnection::systemBus());
+     reply = device.ConnectProfile(profileUuid);
++    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
++    connect(watcher, &QDBusPendingCallWatcher::finished,
++            this, &QBluetoothSocketPrivateBluezDBus::connectToServiceReplyHandler);
++
++    q->setOpenMode(openMode);
++    q->setSocketState(QBluetoothSocket::ConnectingState);
++}
++
++void QBluetoothSocketPrivateBluezDBus::connectToServiceReplyHandler(
++        QDBusPendingCallWatcher *watcher)
++{
++    Q_Q(QBluetoothSocket);
++
++    QDBusPendingReply<> reply = *watcher;
+     if (reply.isError()) {
+-        qCWarning(QT_BT_BLUEZ) << "Cannot connect to profile/service:" << uuid;
++        qCWarning(QT_BT_BLUEZ) << "Cannot connect to profile/service.";
+ 
+         clearSocket();
+ 
+         errorString = QBluetoothSocket::tr("Cannot connect to remote profile");
+         q->setSocketError(QBluetoothSocket::HostNotFoundError);
+-        return;
+     }
+-
+-    q->setOpenMode(openMode);
+-    q->setSocketState(QBluetoothSocket::ConnectingState);
++    watcher->deleteLater();
+ }
+ 
+ void QBluetoothSocketPrivateBluezDBus::connectToService(
+diff --git a/src/bluetooth/qbluetoothsocket_bluezdbus_p.h b/src/bluetooth/qbluetoothsocket_bluezdbus_p.h
+index 4d1a272e..7f195cdd 100644
+--- a/src/bluetooth/qbluetoothsocket_bluezdbus_p.h
++++ b/src/bluetooth/qbluetoothsocket_bluezdbus_p.h
+@@ -56,6 +56,7 @@
+ #include <QtDBus/qdbusunixfiledescriptor.h>
+ 
+ #include <QtNetwork/qlocalsocket.h>
++#include <QDBusPendingCallWatcher>
+ 
+ class OrgBluezProfileManager1Interface;
+ 
+@@ -110,6 +111,9 @@ public:
+     bool canReadLine() const override;
+     qint64 bytesToWrite() const override;
+ 
++public slots:
++    void connectToServiceReplyHandler(QDBusPendingCallWatcher *);
++
+ private:
+     void remoteConnected(const QDBusUnixFileDescriptor &fd);
+     void socketStateChanged(QLocalSocket::LocalSocketState newState);
+diff --git a/src/bluetooth/qbluetoothsocket_osx.mm b/src/bluetooth/qbluetoothsocket_osx.mm
+index 8af085ac..bb9d7f84 100644
+--- a/src/bluetooth/qbluetoothsocket_osx.mm
++++ b/src/bluetooth/qbluetoothsocket_osx.mm
+@@ -519,8 +519,8 @@ void QBluetoothSocketPrivate::channelOpenComplete()
+     Q_ASSERT_X(q_ptr, Q_FUNC_INFO, "invalid q_ptr (null)");
+ 
+     if (!isConnecting) {
+-        q_ptr->setSocketState(QBluetoothSocket::ConnectedState);
+         q_ptr->setOpenMode(openMode);
++        q_ptr->setSocketState(QBluetoothSocket::ConnectedState);
+         emit q_ptr->connected();
+     } else {
+         state = QBluetoothSocket::ConnectedState;
+@@ -537,8 +537,8 @@ void QBluetoothSocketPrivate::channelClosed()
+     // (thus close/abort probably will not work).
+ 
+     if (!isConnecting) {
+-        q_ptr->setSocketState(QBluetoothSocket::UnconnectedState);
+         q_ptr->setOpenMode(QIODevice::NotOpen);
++        q_ptr->setSocketState(QBluetoothSocket::UnconnectedState);
+         emit q_ptr->readChannelFinished();
+         emit q_ptr->disconnected();
+     } else {
+diff --git a/src/bluetooth/qbluetoothsocket_win.cpp b/src/bluetooth/qbluetoothsocket_win.cpp
+index 83855323..0fe22f6e 100644
+--- a/src/bluetooth/qbluetoothsocket_win.cpp
++++ b/src/bluetooth/qbluetoothsocket_win.cpp
+@@ -133,8 +133,8 @@ void QBluetoothSocketPrivateWin::connectToServiceHelper(const QBluetoothAddress
+ 
+     const int error = ::WSAGetLastError();
+     if (result != SOCKET_ERROR || error == WSAEWOULDBLOCK) {
+-        q->setSocketState(QBluetoothSocket::ConnectingState);
+         q->setOpenMode(openMode);
++        q->setSocketState(QBluetoothSocket::ConnectingState);
+     } else {
+         errorString = qt_error_string(error);
+         q->setSocketError(QBluetoothSocket::UnknownSocketError);
+@@ -341,10 +341,12 @@ void QBluetoothSocketPrivateWin::abort()
+     Q_Q(QBluetoothSocket);
+ 
+     const bool wasConnected = q->state() == QBluetoothSocket::ConnectedState;
+-    q->setSocketState(QBluetoothSocket::UnconnectedState);
+     if (wasConnected) {
+         q->setOpenMode(QIODevice::NotOpen);
++        q->setSocketState(QBluetoothSocket::UnconnectedState);
+         emit q->readChannelFinished();
++    } else {
++        q->setSocketState(QBluetoothSocket::UnconnectedState);
+     }
+ }
+ 
+@@ -509,8 +511,8 @@ bool QBluetoothSocketPrivateWin::setSocketDescriptor(int socketDescriptor,
+ 
+     if (!createNotifiers())
+         return false;
+-    q->setSocketState(socketState);
+     q->setOpenMode(openMode);
++    q->setSocketState(socketState);
+     if (socketState == QBluetoothSocket::ConnectedState) {
+         connectWriteNotifier->setEnabled(true);
+         readNotifier->setEnabled(true);
+diff --git a/src/bluetooth/qlowenergycontroller_bluezdbus.cpp b/src/bluetooth/qlowenergycontroller_bluezdbus.cpp
+index d69fb6cd..ff6444f4 100644
+--- a/src/bluetooth/qlowenergycontroller_bluezdbus.cpp
++++ b/src/bluetooth/qlowenergycontroller_bluezdbus.cpp
+@@ -208,12 +208,17 @@ void QLowEnergyControllerPrivateBluezDBus::characteristicPropertiesChanged(
+         emit service->characteristicChanged(changedChar, newValue);
+ }
+ 
+-void QLowEnergyControllerPrivateBluezDBus::interfacesRemoved(
+-        const QDBusObjectPath &objectPath, const QStringList &/*interfaces*/)
++void QLowEnergyControllerPrivateBluezDBus::interfacesRemoved(const QDBusObjectPath &objectPath,
++                                                             const QStringList &interfaces)
+ {
+     if (objectPath.path() == device->path()) {
+-        qCWarning(QT_BT_BLUEZ) << "DBus Device1 was removed";
+-        executeClose(QLowEnergyController::UnknownRemoteDeviceError);
++        if (interfaces.contains(QStringLiteral("org.bluez.Device1"))) {
++            qCWarning(QT_BT_BLUEZ) << "DBus Device1 was removed";
++            executeClose(QLowEnergyController::UnknownRemoteDeviceError);
++        } else {
++            qCDebug(QT_BT_BLUEZ) << "DBus interfaces" << interfaces << "were removed from"
++                                 << objectPath.path();
++        }
+     } else if (objectPath.path() == adapter->path()) {
+         qCWarning(QT_BT_BLUEZ) << "DBus Adapter was removed";
+         executeClose(QLowEnergyController::InvalidBluetoothAdapterError);
