@@ -7,6 +7,10 @@ Andreas Buhr (4):
 Jani Heikkinen (1):
       Bump version
 
+Juha Vuolle (2):
+      Fix Linux bluetooth service discovery crash with multiple services
+      Use the service's socket protocol info on Bluez bluetooth socket
+
 diff --git a/dist/changes-5.15.2 b/dist/changes-5.15.2
 deleted file mode 100644
 index 904e0eab..00000000
@@ -37,6 +41,23 @@ index 904e0eab..00000000
 -****************************************************************************
 -
 -This release only contains minor changes.
+diff --git a/src/bluetooth/qbluetoothservicediscoveryagent_bluez.cpp b/src/bluetooth/qbluetoothservicediscoveryagent_bluez.cpp
+index 6a93143b..6d190711 100644
+--- a/src/bluetooth/qbluetoothservicediscoveryagent_bluez.cpp
++++ b/src/bluetooth/qbluetoothservicediscoveryagent_bluez.cpp
+@@ -334,8 +334,10 @@ void QBluetoothServiceDiscoveryAgentPrivate::_q_finishSdpScan(QBluetoothServiceD
+                 qCDebug(QT_BT_BLUEZ) << "Discovered services" << discoveredDevices.at(0).address().toString()
+                                      << serviceInfo.serviceName() << serviceInfo.serviceUuid()
+                                      << ">>>" << serviceInfo.serviceClassUuids();
+-
+-                emit q->serviceDiscovered(serviceInfo);
++                // Use queued connection to allow us finish the service looping; the application
++                // might call stop() when it has detected the service-of-interest.
++                QMetaObject::invokeMethod(q, "serviceDiscovered", Qt::QueuedConnection,
++                                          Q_ARG(QBluetoothServiceInfo, serviceInfo));
+             }
+         }
+     }
 diff --git a/src/bluetooth/qbluetoothserviceinfo_bluez.cpp b/src/bluetooth/qbluetoothserviceinfo_bluez.cpp
 index d91367c4..418d0a1f 100644
 --- a/src/bluetooth/qbluetoothserviceinfo_bluez.cpp
@@ -64,7 +85,7 @@ index e7d06f2e..2c22fde6 100644
      return true;
  }
 diff --git a/src/bluetooth/qbluetoothsocket_bluezdbus.cpp b/src/bluetooth/qbluetoothsocket_bluezdbus.cpp
-index d3fc13e4..084aa958 100644
+index d3fc13e4..d6aa17a7 100644
 --- a/src/bluetooth/qbluetoothsocket_bluezdbus.cpp
 +++ b/src/bluetooth/qbluetoothsocket_bluezdbus.cpp
 @@ -238,18 +238,29 @@ void QBluetoothSocketPrivateBluezDBus::connectToServiceHelper(
@@ -102,6 +123,17 @@ index d3fc13e4..084aa958 100644
  }
  
  void QBluetoothSocketPrivateBluezDBus::connectToService(
+@@ -273,6 +284,10 @@ void QBluetoothSocketPrivateBluezDBus::connectToService(
+         return;
+     }
+ 
++    if (service.socketProtocol() != QBluetoothServiceInfo::Protocol::UnknownProtocol)
++        socketType = service.socketProtocol();
++    qCDebug(QT_BT_BLUEZ) << "Socket protocol used:" << socketType;
++
+     connectToService(service.device().address(), targetService, openMode);
+ }
+ 
 diff --git a/src/bluetooth/qbluetoothsocket_bluezdbus_p.h b/src/bluetooth/qbluetoothsocket_bluezdbus_p.h
 index 4d1a272e..7f195cdd 100644
 --- a/src/bluetooth/qbluetoothsocket_bluezdbus_p.h
@@ -212,3 +244,16 @@ index d69fb6cd..ff6444f4 100644
      } else if (objectPath.path() == adapter->path()) {
          qCWarning(QT_BT_BLUEZ) << "DBus Adapter was removed";
          executeClose(QLowEnergyController::InvalidBluetoothAdapterError);
+diff --git a/tests/auto/qbluetoothsocket/tst_qbluetoothsocket.cpp b/tests/auto/qbluetoothsocket/tst_qbluetoothsocket.cpp
+index 05bc1a0f..a7b5ef1f 100644
+--- a/tests/auto/qbluetoothsocket/tst_qbluetoothsocket.cpp
++++ b/tests/auto/qbluetoothsocket/tst_qbluetoothsocket.cpp
+@@ -142,7 +142,7 @@ void tst_QBluetoothSocket::initTestCase()
+     qDebug() << "Starting discovery";
+ 
+     sda->setUuidFilter(QBluetoothUuid(QString(TEST_SERVICE_UUID)));
+-    sda->start(QBluetoothServiceDiscoveryAgent::MinimalDiscovery);
++    sda->start(QBluetoothServiceDiscoveryAgent::FullDiscovery);
+ 
+     for (int connectTime = MaxConnectTime; !done_discovery && connectTime > 0; connectTime -= 1000)
+         QTest::qWait(1000);
