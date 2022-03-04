@@ -1,15 +1,20 @@
 Andreas Buhr (4):
-      Correct error handling in QLowEnergyControllerPrivateBluezDBUS
-      Fix error handling in BlueZ connectToServiceHelper
       Add server role to BlueZ service registration
+      Fix error handling in BlueZ connectToServiceHelper
+      Correct error handling in QLowEnergyControllerPrivateBluezDBUS
       Always call setOpenMode before setSocketState
 
 Jani Heikkinen (1):
       Bump version
 
-Juha Vuolle (2):
+Juha Vuolle (3):
       Fix Linux bluetooth service discovery crash with multiple services
       Use the service's socket protocol info on Bluez bluetooth socket
+      Keep the bluetooth service name if the remote has provided it
+
+Tarja Sundqvist (2):
+      Update commercial license headers
+      Revert "Update commercial license headers"
 
 diff --git a/dist/changes-5.15.2 b/dist/changes-5.15.2
 deleted file mode 100644
@@ -42,10 +47,22 @@ index 904e0eab..00000000
 -
 -This release only contains minor changes.
 diff --git a/src/bluetooth/qbluetoothservicediscoveryagent_bluez.cpp b/src/bluetooth/qbluetoothservicediscoveryagent_bluez.cpp
-index 6a93143b..6d190711 100644
+index 6a93143b..4a18cfc7 100644
 --- a/src/bluetooth/qbluetoothservicediscoveryagent_bluez.cpp
 +++ b/src/bluetooth/qbluetoothservicediscoveryagent_bluez.cpp
-@@ -334,8 +334,10 @@ void QBluetoothServiceDiscoveryAgentPrivate::_q_finishSdpScan(QBluetoothServiceD
+@@ -320,7 +320,10 @@ void QBluetoothServiceDiscoveryAgentPrivate::_q_finishSdpScan(QBluetoothServiceD
+             for (const QBluetoothUuid &id : serviceClassUuids) {
+                 if (id.minimumSize() == 16) {
+                     serviceInfo.setServiceUuid(id);
+-                    serviceInfo.setServiceName(QBluetoothServiceDiscoveryAgent::tr("Custom Service"));
++                    if (serviceInfo.serviceName().isEmpty()) {
++                        serviceInfo.setServiceName(
++                                    QBluetoothServiceDiscoveryAgent::tr("Custom Service"));
++                    }
+                     QBluetoothServiceInfo::Sequence modSeq =
+                             serviceInfo.attribute(QBluetoothServiceInfo::ServiceClassIds).value<QBluetoothServiceInfo::Sequence>();
+                     modSeq.removeOne(QVariant::fromValue(id));
+@@ -334,8 +337,10 @@ void QBluetoothServiceDiscoveryAgentPrivate::_q_finishSdpScan(QBluetoothServiceD
                  qCDebug(QT_BT_BLUEZ) << "Discovered services" << discoveredDevices.at(0).address().toString()
                                       << serviceInfo.serviceName() << serviceInfo.serviceUuid()
                                       << ">>>" << serviceInfo.serviceClassUuids();
