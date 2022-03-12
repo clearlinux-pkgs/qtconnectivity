@@ -7,10 +7,11 @@ Andreas Buhr (4):
 Jani Heikkinen (1):
       Bump version
 
-Juha Vuolle (3):
+Juha Vuolle (4):
       Fix Linux bluetooth service discovery crash with multiple services
       Use the service's socket protocol info on Bluez bluetooth socket
       Keep the bluetooth service name if the remote has provided it
+      Handle LE enhanced connection complete in Bluez peripheral
 
 Tarja Sundqvist (2):
       Update commercial license headers
@@ -46,6 +47,24 @@ index 904e0eab..00000000
 -****************************************************************************
 -
 -This release only contains minor changes.
+diff --git a/src/bluetooth/bluez/hcimanager.cpp b/src/bluetooth/bluez/hcimanager.cpp
+index e2635fae..a8b8e3b9 100644
+--- a/src/bluetooth/bluez/hcimanager.cpp
++++ b/src/bluetooth/bluez/hcimanager.cpp
+@@ -563,9 +563,11 @@ void HciManager::handleHciAclPacket(const quint8 *data, int size)
+ 
+ void HciManager::handleLeMetaEvent(const quint8 *data)
+ {
+-    // Spec v4.2, Vol 2, part E, 7.7.65ff
++    // Spec v5.3, Vol 4, part E, 7.7.65.*
+     switch (*data) {
+-    case 0x1: {
++    case 0x1: // HCI_LE_Connection_Complete
++    case 0xA: // HCI_LE_Enhanced_Connection_Complete
++    {
+         const quint16 handle = bt_get_le16(data + 2);
+         emit connectionComplete(handle);
+         break;
 diff --git a/src/bluetooth/qbluetoothservicediscoveryagent_bluez.cpp b/src/bluetooth/qbluetoothservicediscoveryagent_bluez.cpp
 index 6a93143b..4a18cfc7 100644
 --- a/src/bluetooth/qbluetoothservicediscoveryagent_bluez.cpp
