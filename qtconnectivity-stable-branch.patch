@@ -10,11 +10,12 @@ Jani Heikkinen (2):
       Bump version
       Bump version
 
-Juha Vuolle (4):
+Juha Vuolle (5):
       Fix Linux bluetooth service discovery crash with multiple services
       Use the service's socket protocol info on Bluez bluetooth socket
       Keep the bluetooth service name if the remote has provided it
       Handle LE enhanced connection complete in Bluez peripheral
+      Add QIODevice::canReadLine call to QBluetoothSocket
 
 Tarja Sundqvist (3):
       Update commercial license headers
@@ -110,6 +111,19 @@ index d91367c4..418d0a1f 100644
  
          // Strategy to pick service uuid
          // 1.) use serviceUuid()
+diff --git a/src/bluetooth/qbluetoothsocket.cpp b/src/bluetooth/qbluetoothsocket.cpp
+index e4d85447..aadd4755 100644
+--- a/src/bluetooth/qbluetoothsocket.cpp
++++ b/src/bluetooth/qbluetoothsocket.cpp
+@@ -593,7 +593,7 @@ void QBluetoothSocket::setSocketState(QBluetoothSocket::SocketState state)
+ bool QBluetoothSocket::canReadLine() const
+ {
+     Q_D(const QBluetoothSocketBase);
+-    return d->canReadLine();
++    return d->canReadLine() || QIODevice::canReadLine();
+ }
+ 
+ /*!
 diff --git a/src/bluetooth/qbluetoothsocket_bluez.cpp b/src/bluetooth/qbluetoothsocket_bluez.cpp
 index e7d06f2e..2c22fde6 100644
 --- a/src/bluetooth/qbluetoothsocket_bluez.cpp
