@@ -2,3 +2,14 @@
 # but are undesirable. One entry per line, no whitespace.
 Qt5Bluetooth
 Qt5Nfc
+Qt6Bluetooth
+Qt6Nfc
+Qt6Concurrent
+Qt6Core
+Qt6DBus
+Qt6Gui
+Qt6Network
+Qt6Qml
+Qt6Quick
+Qt6Test
+Qt6Widgets
